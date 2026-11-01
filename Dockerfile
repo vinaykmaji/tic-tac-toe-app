@@ -1,23 +1,13 @@
-# Use the official Node.js 16 image
-FROM node:16
-
-# Set the working directory in the container
+# Stage 1: build
+FROM node:20-alpine AS build
 WORKDIR /app
-
-# Copy package.json and package-lock.json
 COPY package*.json ./
-
-# Install dependencies
-RUN npm install
-
-# Copy the entire React app source code to the container
+RUN npm ci
 COPY . .
-
-# Build the React app
 RUN npm run build
 
-# Expose port 3000 (the port your Node.js app runs on)
-EXPOSE 3000
-
-# Start the Node.js app
-CMD ["npm", "start"]
+# Stage 2: serve
+FROM nginx:alpine
+COPY --from=build /app/build /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
