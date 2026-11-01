@@ -2,7 +2,7 @@ name: Deploy to EKS
 on:
   push:
     branches: [main]
-    paths: ['k8s/**']
+    # paths: ['k8s/**']
   workflow_dispatch:
 
 env:
