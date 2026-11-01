@@ -1,0 +1,30 @@
+name: Deploy to EKS
+on:
+  push:
+    branches: [main]
+    paths: ['k8s/**']
+  workflow_dispatch:
+
+env:
+  AWS_REGION: eu-north-1
+  CLUSTER: vin-eks-cluster
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, Eks-githubactions-vin]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update kubeconfig
+        run: aws eks --region $AWS_REGION update-kubeconfig --name $CLUSTER
+
+      - name: Validate manifests
+        run: kubectl apply --dry-run=server -f k8s/
+
+      - name: Deploy
+        run: kubectl apply -f k8s/
+
+      - name: Verify rollout
+        run: |
+          kubectl rollout status deployment/tic-tac-toe --timeout=120s
+          kubectl get pods,svc -n default
