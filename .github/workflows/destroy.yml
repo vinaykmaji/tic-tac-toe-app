@@ -24,11 +24,14 @@ jobs:
           docker rm game || true
 
       - name: Update kubeconfig
-        run: aws eks --region eu-north-1 update-kubeconfig --name vin-eks-cluster
-
+        # run: aws eks --region eu-north-1 update-kubeconfig --name vin-eks-cluster
+        run: |
+            aws eks --region  eu-north-1 update-kubeconfig --name vin-eks-cluster --kubeconfig $HOME/.kube/config
+            echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
+    
       - name: Deploy to kubernetes
-        run: kubectl delete -f deployment-service.yml
-
+        run: kubectl delete -f deployment-service.yml --ignore-not-found
+  
       - name: Send a Slack Notification
         if: always()
         uses: act10ns/slack@v1
